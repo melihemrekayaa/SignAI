@@ -17,6 +17,7 @@ napier = "2.7.1"
 coil = "2.7.0"
 timber = "5.0.1"
 
+
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 
@@ -58,6 +59,7 @@ coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
 lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

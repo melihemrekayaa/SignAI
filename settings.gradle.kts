@@ -14,6 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BaseApp"
+rootProject.name = "SignAI"
 include(":androidApp")
 include(":shared")

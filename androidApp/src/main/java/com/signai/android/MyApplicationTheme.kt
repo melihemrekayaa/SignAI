@@ -1,4 +1,4 @@
-package com.example.baseapp.android
+package com.signai.android
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape

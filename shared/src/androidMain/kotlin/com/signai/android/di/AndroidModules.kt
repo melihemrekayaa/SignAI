@@ -1,4 +1,4 @@
-package com.example.baseapp.android.di
+package com.signai.android.di
 
 import org.koin.dsl.module
 

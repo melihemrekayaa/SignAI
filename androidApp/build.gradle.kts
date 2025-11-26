@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.baseapp.android"
+    namespace = "com.signai.android"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.baseapp.android"
+        applicationId = "com.signai.android"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -68,6 +68,8 @@ dependencies {
 
     // Logging
     implementation(libs.timber)
+    implementation(libs.napier)
+
 
     debugImplementation(libs.compose.ui.tooling)
 }

@@ -84,7 +84,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.baseapp"
+    namespace = "com.signai"
     compileSdk = 35
 
     defaultConfig {
