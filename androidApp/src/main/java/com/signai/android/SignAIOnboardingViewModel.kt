@@ -1,85 +1,111 @@
 package com.signai.android
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.signai.android.onboarding.OnboardingUiState
-import com.signai.signature.PersonalityTrait
-import com.signai.signature.SignatureGenerator
-import com.signai.signature.SignatureProfile
-import com.signai.signature.SignatureStyle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
-class SignAIOnboardingViewModel(
-    private val generator: SignatureGenerator
-) : ViewModel() {
+data class StyleOption(
+    val id: String,
+    val title: String,
+    val subtitle: String
+)
 
-    private val _uiState = MutableStateFlow(OnboardingUiState())
-    val uiState: StateFlow<OnboardingUiState> = _uiState
+data class TraitOption(
+    val id: String,
+    val label: String
+)
 
-    // 🔹 Text field değişim fonksiyonları
-    fun onFullNameChange(value: String) {
-        _uiState.value = _uiState.value.copy(fullName = value)
-    }
+data class SignAIOnboardingUiState(
+    val currentStep: Int = 1,
+    val totalSteps: Int = 4, // şimdilik 4 ekran
+    val styleOptions: List<StyleOption> = defaultStyleOptions(),
+    val selectedStyleIndex: Int = 0,
+    val traitOptions: List<TraitOption> = defaultTraitOptions(),
+    val selectedTraitIds: Set<String> = emptySet()
+)
 
-    fun onNicknameChange(value: String) {
-        _uiState.value = _uiState.value.copy(nickname = value)
-    }
+private fun defaultStyleOptions(): List<StyleOption> = listOf(
+    StyleOption(
+        id = "formal",
+        title = "Formality",
+        subtitle = "Clean, professional and polished"
+    ),
+    StyleOption(
+        id = "casual",
+        title = "Casual",
+        subtitle = "Relaxed and approachable"
+    ),
+    StyleOption(
+        id = "expressive",
+        title = "Expressive",
+        subtitle = "Playful, bold and unique"
+    )
+)
 
-    fun onOccupationChange(value: String) {
-        _uiState.value = _uiState.value.copy(occupation = value)
-    }
+private fun defaultTraitOptions(): List<TraitOption> = listOf(
+    TraitOption("bold", "Bold"),
+    TraitOption("elegant", "Elegant"),
+    TraitOption("minimalist", "Minimalist"),
+    TraitOption("creative", "Creative"),
+    TraitOption("formal", "Formal"),
+    TraitOption("playful", "Playful")
+)
 
-    // 🔹 Style / trait seçimleri (şimdilik UI’da kullanmasak da dursun)
-    fun onStyleSelected(style: SignatureStyle) {
-        _uiState.value = _uiState.value.copy(style = style)
-    }
+class SignAIOnboardingViewModel : ViewModel() {
 
-    fun onTraitSelected(trait: PersonalityTrait) {
-        _uiState.value = _uiState.value.copy(trait = trait)
-    }
+    private val _uiState = MutableStateFlow(SignAIOnboardingUiState())
+    val uiState: StateFlow<SignAIOnboardingUiState> = _uiState.asStateFlow()
 
-    // 🔹 İmza üret
-    fun onGenerateClicked() {
-        val state = _uiState.value
-        if (state.fullName.isBlank()) {
-            _uiState.value = state.copy(errorMessage = "Lütfen ad soyad gir.")
-            return
-        }
-
-        viewModelScope.launch {
-            _uiState.value = state.copy(
-                isGenerating = true,
-                errorMessage = null
+    fun selectStyle(index: Int) {
+        _uiState.update { state ->
+            state.copy(
+                selectedStyleIndex = index.coerceIn(
+                    0,
+                    (state.styleOptions.size - 1).coerceAtLeast(0)
+                )
             )
-
-            try {
-                val profile = SignatureProfile(
-                    fullName = state.fullName.trim(),
-                    nickname = state.nickname.trim().ifBlank { null },
-                    occupation = state.occupation.trim().ifBlank { null },
-                    style = state.style,
-                    trait = state.trait
-                )
-
-                val result = generator.generate(profile)
-
-                _uiState.value = _uiState.value.copy(
-                    isGenerating = false,
-                    aiPrompt = result.prompt,
-                    aiInstructions = result.instructions
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isGenerating = false,
-                    errorMessage = "İmza üretiminde bir hata oluştu."
-                )
-            }
         }
     }
 
-    fun consumeError() {
-        _uiState.value = _uiState.value.copy(errorMessage = null)
+    fun toggleTrait(traitId: String) {
+        _uiState.update { state ->
+            val current = state.selectedTraitIds
+            val new = if (current.contains(traitId)) {
+                current - traitId
+            } else {
+                // Max 3 trait
+                if (current.size >= 3) current else current + traitId
+            }
+            state.copy(selectedTraitIds = new)
+        }
+    }
+
+    fun next() {
+        _uiState.update { state ->
+            if (state.currentStep >= state.totalSteps) state
+            else state.copy(currentStep = state.currentStep + 1)
+        }
+    }
+
+    fun back() {
+        _uiState.update { state ->
+            if (state.currentStep <= 1) state
+            else state.copy(currentStep = state.currentStep - 1)
+        }
+    }
+
+    fun skip() {
+        // Şimdilik skip de bir sonraki stepe geçsin
+        next()
+    }
+
+    fun goToStep(step: Int) {
+        _uiState.update { state ->
+            state.copy(
+                currentStep = step.coerceIn(1, state.totalSteps)
+            )
+        }
     }
 }

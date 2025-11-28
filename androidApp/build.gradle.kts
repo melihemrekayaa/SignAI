@@ -51,6 +51,8 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.androidx.activity.compose)
 
+    implementation("androidx.compose.material:material-icons-extended:1.7.5")
+
     // Lifecycle / MVVM
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)
