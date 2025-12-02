@@ -1,7 +1,15 @@
-package com.signai.android.ui.feature.landing
+package com.signai.ui.screens.landing
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -14,7 +22,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.signai.android.ui.components.PrimaryButton
+import com.signai.ui.components.PrimaryButton
 
 @Composable
 fun LandingScreen(
@@ -31,7 +39,7 @@ fun LandingScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Hero illustration + başlıklar
+            // Hero Illustration + Başlıklar
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
@@ -45,7 +53,8 @@ fun LandingScreen(
                 Text(
                     text = "Reimagine Your Signature",
                     style = MaterialTheme.typography.headlineMedium,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -59,14 +68,14 @@ fun LandingScreen(
                 )
             }
 
-            // Alt kısım: güven mesajı + buton
+            // Alt Kısım: Buton
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     text = "Trusted by 1M+ users",
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                     textAlign = TextAlign.Center
                 )
@@ -86,8 +95,7 @@ fun LandingScreen(
 private fun SignatureHeroIllustration(
     modifier: Modifier = Modifier
 ) {
-    // Şimdilik basit bir glow’lu daire + gradient ile temsil edelim.
-    // İleride istersen gerçek görsel kullanırız.
+    // Görsel placeholder (Glow Effect)
     Box(
         modifier = modifier
             .aspectRatio(0.9f)
@@ -97,12 +105,13 @@ private fun SignatureHeroIllustration(
                 brush = Brush.radialGradient(
                     colors = listOf(
                         MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
-                        Color(0xFF111827)
+                        Color(0xFF111827) // Dark arka planla uyumlu
                     )
                 )
             ),
         contentAlignment = Alignment.Center
     ) {
+        // İçteki sembolik şekil
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.55f)

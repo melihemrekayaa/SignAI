@@ -42,7 +42,10 @@ android {
 }
 
 dependencies {
-    implementation(projects.shared)
+    // HATA ÇÖZÜMÜ:
+    // 'projects.shared' yerine 'project(":shared")' kullanıyoruz.
+    // Bu yöntem her zaman çalışır ve derleme hatasını giderir.
+    implementation(project(":shared"))
 
     // Compose
     implementation(libs.compose.ui)
@@ -51,6 +54,7 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.androidx.activity.compose)
 
+    // Material Icons Extended (Manuel eklenmiş, sorun yok)
     implementation("androidx.compose.material:material-icons-extended:1.7.5")
 
     // Lifecycle / MVVM
@@ -61,7 +65,7 @@ dependencies {
     // Coroutines
     implementation(libs.coroutines.android)
 
-    // DI
+    // DI (Koin)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
 
@@ -72,7 +76,5 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.napier)
 
-
     debugImplementation(libs.compose.ui.tooling)
 }
-

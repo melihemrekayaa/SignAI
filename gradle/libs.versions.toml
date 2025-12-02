@@ -1,42 +1,71 @@
 [versions]
 agp = "8.10.1"
 kotlin = "2.0.0"
-lifecycle = "2.8.6"
 
-# Compose + AndroidX
-compose = "1.6.8"
+# Compose Multiplatform Plugin
+compose-plugin = "1.6.11"
+
+# Android Compose
+compose-android = "1.6.8"
 compose-material3 = "1.3.1"
 androidx-activityCompose = "1.9.3"
 
-# Core libs
+# Core & Lifecycle (DÜZELTME: 2.8.2 -> 2.8.0)
+# KMP ekosistemi şu an 2.8.0 üzerinde stabil çalışıyor.
+lifecycle = "2.8.0"
 coroutines = "1.8.1"
 serialization = "1.6.3"
-ktor = "2.3.12"
-koin = "3.5.6"
-napier = "2.7.1"
-coil = "2.7.0"
-timber = "5.0.1"
 
+# Network
+ktor = "2.3.12"
+
+# DI (Koin)
+koin = "3.5.6"
+koin-compose = "1.1.5"
+
+# Image Loading
+coil3 = "3.0.0-alpha06"
+
+# Navigation
+navigation-compose = "2.8.0-alpha08"
+
+# Logging
+napier = "2.7.1"
+timber = "5.0.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 
-# Compose / AndroidX
+# --- AndroidX / Compose Android ---
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }
+compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose-android" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-android" }
+compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose-android" }
+compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose-android" }
 compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose-material3" }
 
-# Coroutines
+# --- Lifecycle & ViewModel (KRİTİK DÜZELTMELER BURADA) ---
+# ViewModel Core (Google'ın KMP destekli sürümü)
+androidx-lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "lifecycle" }
+
+# Runtime (Google'ın KMP destekli sürümü)
+lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime", version.ref = "lifecycle" }
+
+# ViewModel Utilities
+lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }
+
+# ViewModel Compose (KMP İÇİN JETBRAINS VERSİYONU ŞART)
+# androidx.lifecycle -> org.jetbrains.androidx.lifecycle
+lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+
+# --- Coroutines ---
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 
-# Serialization
+# --- Serialization ---
 serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 
-# Ktor
+# --- Ktor (Network) ---
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
@@ -44,22 +73,22 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "k
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 
-# Koin (DI)
+# --- Koin (DI) ---
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
+koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin-compose" }
 
-# Logging
+# --- Logging ---
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
-# Image loading
-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
+# --- Image Loading ---
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil3" }
+coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor", version.ref = "coil3" }
 
-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
-
+# --- Navigation ---
+androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -67,5 +96,6 @@ androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinCocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
+jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

@@ -1,4 +1,3 @@
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 pluginManagement {
     repositories {
         google()
@@ -10,7 +9,8 @@ pluginManagement {
 dependencyResolutionManagement {
     repositories {
         google()
-        mavenCentral()
+        mavenCentral() // <-- BU SATIR ÇOK ÖNEMLİ
+        // Eğer varsa "maven { url = uri("https://..." ) }" satırları kalabilir
     }
 }
 

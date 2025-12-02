@@ -1,4 +1,4 @@
-package com.signai.android.create
+package com.signai.ui.screens.creation
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -16,16 +16,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Redo
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Redo
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,39 +38,49 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private enum class SignatureInputMode {
-    Draw, Type
+// --------------------------------------
+// MODELS
+// --------------------------------------
+
+enum class SignatureInputMode {
+    Draw,
+    Type
 }
 
-data class SignatureStyle(
+data class SignatureStyleItem(
     val id: String,
     val label: String
 )
 
-private data class SignatureStroke(
+data class StrokeSegment(
     val path: Path,
     val strokeWidthPx: Float
 )
+
+// --------------------------------------
+// ROOT SCREEN
+// --------------------------------------
 
 @Composable
 fun CreateSignatureScreen(
@@ -77,59 +88,61 @@ fun CreateSignatureScreen(
     onOpenSettingsClick: () -> Unit = {},
     onGenerateClick: () -> Unit = {}
 ) {
-    // Draw / Type tab
-    var inputMode by remember { mutableStateOf(SignatureInputMode.Draw) }
+    var inputMode by rememberSaveable { mutableStateOf(SignatureInputMode.Draw) }
 
-    // Strokes + undo / redo
-    var strokes by remember { mutableStateOf<List<SignatureStroke>>(emptyList()) }
-    var undoneStrokes by remember { mutableStateOf<List<SignatureStroke>>(emptyList()) }
+    // Çizim durumu
+    var strokes by remember { mutableStateOf<List<StrokeSegment>>(emptyList()) }
+    var undoneStrokes by remember { mutableStateOf<List<StrokeSegment>>(emptyList()) }
 
     val canUndo = strokes.isNotEmpty()
     val canRedo = undoneStrokes.isNotEmpty()
 
-    // Pen thickness (dp) – index state, crash yok
-    val thicknessOptions = listOf(2.dp, 3.dp, 4.dp, 5.dp, 7.dp)
-    var selectedThicknessIndex by remember { mutableIntStateOf(2) }
-    val selectedThickness = thicknessOptions[selectedThicknessIndex]
-
-    // Style chips
     val styles = remember {
         listOf(
-            SignatureStyle("professional", "Professional"),
-            SignatureStyle("elegant", "Elegant"),
-            SignatureStyle("casual", "Casual"),
-            SignatureStyle("creative", "Creative")
+            SignatureStyleItem("professional", "Professional"),
+            SignatureStyleItem("elegant", "Elegant"),
+            SignatureStyleItem("casual", "Casual"),
+            SignatureStyleItem("creative", "Creative")
         )
     }
-    var selectedStyleId by remember { mutableStateOf("professional") }
+    var selectedStyleId by rememberSaveable { mutableStateOf("professional") }
+
+    val thicknessOptions = listOf(2f, 3f, 4f, 6f, 8f)
+    var selectedThicknessIndex by remember { mutableStateOf(2) }
+
+    val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
-                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
 
-                Text(
-                    text = "Create signature",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-
-                IconButton(onClick = onOpenSettingsClick) {
-                    Icon(
-                        imageVector = Icons.Filled.Settings,
-                        contentDescription = "Settings"
+                    Text(
+                        text = "Create Signature",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
+
+                    IconButton(onClick = onOpenSettingsClick) {
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = "Settings"
+                        )
+                    }
                 }
             }
         },
@@ -153,7 +166,7 @@ fun CreateSignatureScreen(
                 Spacer(modifier = Modifier.height(4.dp))
                 TextButton(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { /* later: maybe preview */ }
+                    onClick = { /* Later: maybe preview */ }
                 ) {
                     Text(text = "Skip for now")
                 }
@@ -164,12 +177,12 @@ fun CreateSignatureScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .verticalScroll(scrollState)
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Tabs: Draw / Type
             SignatureModeTabs(
                 currentMode = inputMode,
                 onModeChange = { inputMode = it }
@@ -177,11 +190,11 @@ fun CreateSignatureScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Signature card
+            // ÇİZİM ALANI
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(320.dp),
+                    .height(340.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
@@ -189,28 +202,28 @@ fun CreateSignatureScreen(
                     )
                 )
             ) {
-                Column(
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .padding(20.dp)
                 ) {
-                    // White drawing canvas – büyütülmüş alan
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
+                            .fillMaxSize()
                             .clip(RoundedCornerShape(20.dp))
-                            .background(Color.White),
-                        contentAlignment = Alignment.Center
+                            .background(Color.White)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
+                                shape = RoundedCornerShape(20.dp)
+                            )
                     ) {
                         when (inputMode) {
                             SignatureInputMode.Draw -> SignatureDrawingCanvas(
                                 strokes = strokes,
-                                penThickness = selectedThickness,
-                                modifier = Modifier.fillMaxSize(),
-                                onStrokeCompleted = { stroke ->
-                                    strokes = strokes + stroke
+                                selectedStrokeWidthDp = thicknessOptions[selectedThicknessIndex],
+                                onStrokeCompleted = { newStroke ->
+                                    strokes = strokes + newStroke
                                     undoneStrokes = emptyList()
                                 }
                             )
@@ -218,97 +231,86 @@ fun CreateSignatureScreen(
                             SignatureInputMode.Type -> TypePlaceholder()
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = if (inputMode == SignatureInputMode.Draw)
-                            "Draw your signature here"
-                        else
-                            "Type your name and we'll style it",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Undo / Redo / Clear row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        SmallActionButton(
-                            icon = Icons.Filled.Undo,
-                            label = "Undo",
-                            enabled = canUndo
-                        ) {
-                            if (strokes.isNotEmpty()) {
-                                val last = strokes.last()
-                                strokes = strokes.dropLast(1)
-                                undoneStrokes = undoneStrokes + last
-                            }
-                        }
-
-                        SmallActionButton(
-                            icon = Icons.Filled.Redo,
-                            label = "Redo",
-                            enabled = canRedo
-                        ) {
-                            if (undoneStrokes.isNotEmpty()) {
-                                val last = undoneStrokes.last()
-                                undoneStrokes = undoneStrokes.dropLast(1)
-                                strokes = strokes + last
-                            }
-                        }
-
-                        SmallActionButton(
-                            icon = Icons.Filled.Clear,
-                            label = "Clear",
-                            enabled = strokes.isNotEmpty() || undoneStrokes.isNotEmpty()
-                        ) {
-                            strokes = emptyList()
-                            undoneStrokes = emptyList()
-                        }
-                    }
                 }
             }
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = when (inputMode) {
+                    SignatureInputMode.Draw -> "Draw your signature in the area above."
+                    SignatureInputMode.Type -> "Typing mode is coming soon."
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center
+            )
+
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Pen thickness selector
-            Column(
+            // KALINLIK SEÇİMİ
+            Text(
+                text = "Stroke thickness",
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Pen thickness",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+            )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    thicknessOptions.forEachIndexed { index, option ->
-                        val selected = index == selectedThicknessIndex
-                        PenThicknessChip(
-                            thickness = option,
-                            selected = selected,
-                            onClick = { selectedThicknessIndex = index }
-                        )
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            ThicknessSelectorRow(
+                optionsDp = thicknessOptions,
+                selectedIndex = selectedThicknessIndex,
+                onSelectedChange = { selectedThicknessIndex = it }
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Choose a style
+            // UNDO / REDO / CLEAR BUTONLARI
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SmallActionButton(
+                    icon = Icons.AutoMirrored.Filled.Undo,
+                    label = "Undo",
+                    enabled = canUndo
+                ) {
+                    if (strokes.isNotEmpty()) {
+                        val last = strokes.last()
+                        strokes = strokes.dropLast(1)
+                        undoneStrokes = undoneStrokes + last
+                    }
+                }
+
+                SmallActionButton(
+                    icon = Icons.AutoMirrored.Filled.Redo,
+                    label = "Redo",
+                    enabled = canRedo
+                ) {
+                    if (undoneStrokes.isNotEmpty()) {
+                        val last = undoneStrokes.last()
+                        undoneStrokes = undoneStrokes.dropLast(1)
+                        strokes = strokes + last
+                    }
+                }
+
+                SmallActionButton(
+                    icon = Icons.Filled.Clear,
+                    label = "Clear",
+                    enabled = strokes.isNotEmpty() || undoneStrokes.isNotEmpty()
+                ) {
+                    strokes = emptyList()
+                    undoneStrokes = emptyList()
+                }
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            // STİL SEÇİMİ
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -336,9 +338,9 @@ fun CreateSignatureScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Your AI signatures
+            // AI SONUÇ ALANI (Placeholder)
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -381,6 +383,10 @@ fun CreateSignatureScreen(
     }
 }
 
+// --------------------------------------
+// COMPONENTLER
+// --------------------------------------
+
 @Composable
 private fun SignatureModeTabs(
     currentMode: SignatureInputMode,
@@ -416,7 +422,8 @@ private fun RowScope.ModeTab(
     onClick: () -> Unit
 ) {
     val bg = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent
-    val content = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+    val content =
+        if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
 
     Box(
         modifier = Modifier
@@ -429,16 +436,17 @@ private fun RowScope.ModeTab(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+            style = MaterialTheme.typography.labelLarge.copy(
+                fontWeight = FontWeight.SemiBold
+            ),
             color = content
         )
     }
 }
 
-
 @Composable
 private fun SmallActionButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     label: String,
     enabled: Boolean = true,
     onClick: () -> Unit
@@ -499,84 +507,110 @@ private fun RowScope.StyleChip(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
             color = textColor,
             textAlign = TextAlign.Center
         )
     }
 }
 
+@Composable
+private fun ThicknessSelectorRow(
+    optionsDp: List<Float>,
+    selectedIndex: Int,
+    onSelectedChange: (Int) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        optionsDp.forEachIndexed { index, dpValue ->
+            val selected = index == selectedIndex
+            ThicknessDot(
+                thicknessDp = dpValue,
+                selected = selected,
+                onClick = { onSelectedChange(index) }
+            )
+        }
+    }
+}
 
 @Composable
-private fun PenThicknessChip(
-    thickness: Dp,
+private fun ThicknessDot(
+    thicknessDp: Float,
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val circleColor =
-        if (selected) MaterialTheme.colorScheme.primary
-        else MaterialTheme.colorScheme.surfaceVariant
-
-    val lineColor =
-        if (selected) Color.White
-        else MaterialTheme.colorScheme.onSurfaceVariant
+    val outerSize = 32.dp
+    val innerSize = thicknessDp.dp.coerceAtLeast(4.dp)
 
     Box(
         modifier = Modifier
-            .size(44.dp)
+            .size(outerSize)
             .clip(CircleShape)
-            .background(circleColor)
+            .background(
+                if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                else MaterialTheme.colorScheme.surfaceVariant
+            )
+            .border(
+                width = if (selected) 2.dp else 1.dp,
+                color = if (selected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
+                shape = CircleShape
+            )
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        // Basit bir kalınlık göstergesi
-        val factor = thickness.value / 4f   // 2dp -> 0.5, 7dp -> ~1.75
         Box(
             modifier = Modifier
-                .width(22.dp)
-                .height((4.dp * factor).coerceAtLeast(2.dp))
-                .clip(RoundedCornerShape(999.dp))
-                .background(lineColor)
+                .size(innerSize)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.onBackground)
         )
     }
 }
 
 @Composable
 private fun SignatureDrawingCanvas(
-    strokes: List<SignatureStroke>,
-    penThickness: Dp,
-    modifier: Modifier = Modifier,
-    onStrokeCompleted: (SignatureStroke) -> Unit
+    strokes: List<StrokeSegment>,
+    selectedStrokeWidthDp: Float,
+    onStrokeCompleted: (StrokeSegment) -> Unit
 ) {
     val density = LocalDensity.current
-    var currentStroke by remember { mutableStateOf<SignatureStroke?>(null) }
+    val strokeWidthPx = with(density) { selectedStrokeWidthDp.dp.toPx() }
+
+    var currentPathPoints by remember { mutableStateOf<List<Offset>>(emptyList()) }
 
     Canvas(
-        modifier = modifier.pointerInput(penThickness) {
-            detectDragGestures(
-                onDragStart = { offset ->
-                    val widthPx = with(density) { penThickness.toPx() }
-                    currentStroke = SignatureStroke(
-                        path = Path().apply { moveTo(offset.x, offset.y) },
-                        strokeWidthPx = widthPx
-                    )
-                },
-                onDrag = { change, _ ->
-                    currentStroke?.path?.lineTo(change.position.x, change.position.y)
-                },
-                onDragEnd = {
-                    currentStroke?.let { stroke ->
-                        onStrokeCompleted(stroke)
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(selectedStrokeWidthDp) {
+                detectDragGestures(
+                    onDragStart = { offset ->
+                        currentPathPoints = listOf(offset)
+                    },
+                    onDrag = { change, _ ->
+                        currentPathPoints = currentPathPoints + change.position
+                    },
+                    onDragEnd = {
+                        if (currentPathPoints.isNotEmpty()) {
+                            val finalPath = createSmoothPath(currentPathPoints)
+                            onStrokeCompleted(
+                                StrokeSegment(
+                                    path = finalPath,
+                                    strokeWidthPx = strokeWidthPx
+                                )
+                            )
+                        }
+                        currentPathPoints = emptyList()
+                    },
+                    onDragCancel = {
+                        currentPathPoints = emptyList()
                     }
-                    currentStroke = null
-                },
-                onDragCancel = {
-                    currentStroke = null
-                }
-            )
-        }
+                )
+            }
     ) {
-        // Daha önce çizilen stroke'lar
         strokes.forEach { stroke ->
             drawPath(
                 path = stroke.path,
@@ -589,19 +623,54 @@ private fun SignatureDrawingCanvas(
             )
         }
 
-        // Şu an çizilmekte olan stroke (parmağı kaldırmadan gözüken kısım)
-        currentStroke?.let { stroke ->
+        if (currentPathPoints.size >= 2) {
+            val tempPath = createSmoothPath(currentPathPoints)
             drawPath(
-                path = stroke.path,
+                path = tempPath,
                 color = Color.Black,
                 style = Stroke(
-                    width = stroke.strokeWidthPx,
+                    width = strokeWidthPx,
                     cap = StrokeCap.Round,
                     join = StrokeJoin.Round
                 )
             )
         }
     }
+}
+
+private fun createSmoothPath(points: List<Offset>): Path {
+    if (points.isEmpty()) return Path()
+
+    val path = Path()
+
+    if (points.size == 1) {
+        path.moveTo(points[0].x, points[0].y)
+        return path
+    }
+
+    if (points.size == 2) {
+        path.moveTo(points[0].x, points[0].y)
+        path.lineTo(points[1].x, points[1].y)
+        return path
+    }
+
+    path.moveTo(points[0].x, points[0].y)
+
+    for (i in 1 until points.size - 1) {
+        val currentPoint = points[i]
+        val nextPoint = points[i + 1]
+        val controlPointX = (currentPoint.x + nextPoint.x) / 2f
+        val controlPointY = (currentPoint.y + nextPoint.y) / 2f
+
+        path.quadraticBezierTo(
+            currentPoint.x, currentPoint.y,
+            controlPointX, controlPointY
+        )
+    }
+
+    path.lineTo(points.last().x, points.last().y)
+
+    return path
 }
 
 @Composable
